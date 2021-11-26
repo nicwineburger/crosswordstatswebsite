@@ -1,23 +1,28 @@
 {
   "files": {
-    "main.css": "/crosswordstatswebsite/static/css/main.8c8b27cf.chunk.css",
-    "main.js": "/crosswordstatswebsite/static/js/main.44601a5b.chunk.js",
-    "main.js.map": "/crosswordstatswebsite/static/js/main.44601a5b.chunk.js.map",
-    "runtime-main.js": "/crosswordstatswebsite/static/js/runtime-main.891d283e.js",
-    "runtime-main.js.map": "/crosswordstatswebsite/static/js/runtime-main.891d283e.js.map",
-    "static/js/2.643b6272.chunk.js": "/crosswordstatswebsite/static/js/2.643b6272.chunk.js",
-    "static/js/2.643b6272.chunk.js.map": "/crosswordstatswebsite/static/js/2.643b6272.chunk.js.map",
-    "static/js/3.8c1552ce.chunk.js": "/crosswordstatswebsite/static/js/3.8c1552ce.chunk.js",
-    "static/js/3.8c1552ce.chunk.js.map": "/crosswordstatswebsite/static/js/3.8c1552ce.chunk.js.map",
+    "main.css": "/crosswordstatswebsite/static/css/main.518ce94c.chunk.css",
+    "main.js": "/crosswordstatswebsite/static/js/main.18db224a.chunk.js",
+    "main.js.map": "/crosswordstatswebsite/static/js/main.18db224a.chunk.js.map",
+    "runtime-main.js": "/crosswordstatswebsite/static/js/runtime-main.ca6708d1.js",
+    "runtime-main.js.map": "/crosswordstatswebsite/static/js/runtime-main.ca6708d1.js.map",
+    "static/css/2.36880a1e.chunk.css": "/crosswordstatswebsite/static/css/2.36880a1e.chunk.css",
+    "static/js/2.f622821b.chunk.js": "/crosswordstatswebsite/static/js/2.f622821b.chunk.js",
+    "static/js/2.f622821b.chunk.js.map": "/crosswordstatswebsite/static/js/2.f622821b.chunk.js.map",
+    "static/js/3.5dd6fed9.chunk.js": "/crosswordstatswebsite/static/js/3.5dd6fed9.chunk.js",
+    "static/js/3.5dd6fed9.chunk.js.map": "/crosswordstatswebsite/static/js/3.5dd6fed9.chunk.js.map",
     "index.html": "/crosswordstatswebsite/index.html",
-    "static/css/main.8c8b27cf.chunk.css.map": "/crosswordstatswebsite/static/css/main.8c8b27cf.chunk.css.map",
-    "static/js/2.643b6272.chunk.js.LICENSE.txt": "/crosswordstatswebsite/static/js/2.643b6272.chunk.js.LICENSE.txt",
-    "static/media/logo.6ce24c58.svg": "/crosswordstatswebsite/static/media/logo.6ce24c58.svg"
+    "static/css/2.36880a1e.chunk.css.map": "/crosswordstatswebsite/static/css/2.36880a1e.chunk.css.map",
+    "static/css/main.518ce94c.chunk.css.map": "/crosswordstatswebsite/static/css/main.518ce94c.chunk.css.map",
+    "static/js/2.f622821b.chunk.js.LICENSE.txt": "/crosswordstatswebsite/static/js/2.f622821b.chunk.js.LICENSE.txt",
+    "static/media/logo.6ce24c58.svg": "/crosswordstatswebsite/static/media/logo.6ce24c58.svg",
+    "static/media/main.25188d52.py": "/crosswordstatswebsite/static/media/main.25188d52.py",
+    "static/media/index.css": "/crosswordstatswebsite/static/media/roboto-vietnamese-400-normal.c0bec65d.woff2"
   },
   "entrypoints": [
-    "static/js/runtime-main.891d283e.js",
-    "static/js/2.643b6272.chunk.js",
-    "static/css/main.8c8b27cf.chunk.css",
-    "static/js/main.44601a5b.chunk.js"
+    "static/js/runtime-main.ca6708d1.js",
+    "static/css/2.36880a1e.chunk.css",
+    "static/js/2.f622821b.chunk.js",
+    "static/css/main.518ce94c.chunk.css",
+    "static/js/main.18db224a.chunk.js"
   ]
 }
