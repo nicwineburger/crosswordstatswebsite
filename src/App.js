@@ -30,35 +30,41 @@ const App = () => {
     const [date, setDate] = useState("");
     const [isSubmit, setIsSubmit] = useState(false);
 
-    useEffect(() => {
-        const run = async () => {
-            let out;
-            if (localStorage.getItem("token") !== null) {
-                out = await runScript(localStorage.getItem("token"))
-            } else {
-                out = await runScript(authKey, date);
-            }
+    // useEffect(() => {
+    //     const run = async () => {
+    //         let out;
+    //         if (localStorage.getItem("token") !== null) {
+    //             out = await runScript(localStorage.getItem("token"))
+    //         } else {
+    //             out = await runScript(authKey, date);
+    //         }
 
-            if (out != null) {
-                let img = out.indexOf("<svg ")
-                let blob = new Blob([out.substr(img)], {type: 'image/svg+xml'})
-                let url = URL.createObjectURL(blob)
-                let image = document.createElement('img')
-                image.addEventListener('load', () => URL.revokeObjectURL(url), {once: true})
-                setOutput(url);
+    //         if (out != null) {
+    //             let img = out.indexOf("<svg ")
+    //             let blob = new Blob([out.substr(img)], {type: 'image/svg+xml'})
+    //             let url = URL.createObjectURL(blob)
+    //             let image = document.createElement('img')
+    //             image.addEventListener('load', () => URL.revokeObjectURL(url), {once: true})
+    //             setOutput(url);
                 
-            }         
+    //         }         
 			
-        }
-        run();
+    //     }
+    //     run();
 
-    }, [authKey, date]);
+    // }, [authKey, date]);
 
-    function afterSubmission(event) {
+    async function afterSubmission(event) {
         event.preventDefault()
         setIsSubmit(true)
-        localStorage.setItem("token", authKey)
-        localStorage.setItem("date", date)
+        let out;
+        out = await runScript(authKey, date);
+        let img = out.indexOf("<svg ")
+        let blob = new Blob([out.substr(img)], {type: 'image/svg+xml'})
+        let url = URL.createObjectURL(blob)
+        let image = document.createElement('img')
+        image.addEventListener('load', () => URL.revokeObjectURL(url), {once: true})
+        setOutput(url);
     }
 
     return (
@@ -90,7 +96,7 @@ const App = () => {
                             <br/>
                             <input
                                 type="text"
-                                value={localStorage.getItem("token")}
+                                value={authKey}
                                 onChange={(e) => setAuthKey(e.target.value)}
                             />
                             </label>
@@ -99,7 +105,7 @@ const App = () => {
                             <br/>
                             <input
                                 type="text"
-                                value={localStorage.getItem("date")}
+                                value={date}
                                 onChange={(e) => setDate(e.target.value)}
                             />
                             </label>
