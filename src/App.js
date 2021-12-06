@@ -4,7 +4,38 @@ import './App.css';
 
 
 const runScript = async (key, date) => {
-    let url = "https://vkuqm7h21l.execute-api.us-east-1.amazonaws.com/default/nic-crossword-lambda"
+
+    if (date === "0") {
+        // let gameId = "19722" // TODO: Need a way to get this programatically. If user hasn't started the puzzle with this ID then everything will break
+        // let gameIdUrl = `https://nyt-games-prd.appspot.com/svc/crosswords/v6/game/${gameId}.json`
+        // let userIdRequest = await fetch(gameIdUrl, {
+        //     method: "GET",
+        //     mode: "cors", 
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //         'nyt-s': key,
+        //         'dnt': 1,
+        //         'Accept': 'application/json' 
+        //     }
+        // })
+        // let userIdResponse = await userIdRequest.json()
+        let userId = "36569100" //userIdResponse["userID"]
+        let streakUrl = `https://nyt-games-prd.appspot.com/svc/crosswords/v3/${userId}/stats-and-streaks.json?date_start=2014-01-01&start_on_monday=true`
+        let streakRequest = await fetch(streakUrl, {
+            method: "GET",
+            headers: {
+                'Content-Type': 'application/json',
+                'nyt-s': key
+            },
+            mode: "cors"
+        })
+        let streakResponse = await streakRequest.json()
+        let streakDate = streakResponse["results"]["streaks"]["dates"][0][0]
+        date = streakDate
+    }
+
+
+    let url = "https://h9e25h7oj8.execute-api.us-east-1.amazonaws.com/default/nic-crossword-lambda"
     let request = {"auth_key": key, "earliest_date": date}
 	let response = await fetch(url, {
         method: "POST",
@@ -30,35 +61,43 @@ const App = () => {
     const [date, setDate] = useState("");
     const [isSubmit, setIsSubmit] = useState(false);
 
-    useEffect(() => {
-        const run = async () => {
-            let out;
-            if (localStorage.getItem("token") !== null) {
-                out = await runScript(localStorage.getItem("token"))
-            } else {
-                out = await runScript(authKey, date);
-            }
+    // useEffect(() => {
+    //     const run = async () => {
+    //         let out;
+    //         if (localStorage.getItem("token") !== null) {
+    //             out = await runScript(localStorage.getItem("token"))
+    //         } else {
+    //             out = await runScript(authKey, date);
+    //         }
 
-            if (out != null) {
-                let img = out.indexOf("<svg ")
-                let blob = new Blob([out.substr(img)], {type: 'image/svg+xml'})
-                let url = URL.createObjectURL(blob)
-                let image = document.createElement('img')
-                image.addEventListener('load', () => URL.revokeObjectURL(url), {once: true})
-                setOutput(url);
+    //         if (out != null) {
+    //             let img = out.indexOf("<svg ")
+    //             let blob = new Blob([out.substr(img)], {type: 'image/svg+xml'})
+    //             let url = URL.createObjectURL(blob)
+    //             let image = document.createElement('img')
+    //             image.addEventListener('load', () => URL.revokeObjectURL(url), {once: true})
+    //             setOutput(url);
                 
-            }         
+    //         }         
 			
-        }
-        run();
+    //     }
+    //     run();
 
-    }, [authKey, date]);
+    // }, [authKey, date]);
 
-    function afterSubmission(event) {
+    async function afterSubmission(event) {
         event.preventDefault()
         setIsSubmit(true)
         localStorage.setItem("token", authKey)
         localStorage.setItem("date", date)
+        
+        let out = await runScript(authKey, date)
+        let img = out.indexOf("<svg ")
+        let blob = new Blob([out.substr(img)], {type: 'image/svg+xml'})
+        let url = URL.createObjectURL(blob)
+        let image = document.createElement('img')
+        image.addEventListener('load', () => URL.revokeObjectURL(url), {once: true})
+        setOutput(url);
     }
 
     return (
@@ -90,7 +129,7 @@ const App = () => {
                             <br/>
                             <input
                                 type="text"
-                                value={localStorage.getItem("token")}
+                                value={authKey}
                                 onChange={(e) => setAuthKey(e.target.value)}
                             />
                             </label>
@@ -99,7 +138,7 @@ const App = () => {
                             <br/>
                             <input
                                 type="text"
-                                value={localStorage.getItem("date")}
+                                value={date}
                                 onChange={(e) => setDate(e.target.value)}
                             />
                             </label>
