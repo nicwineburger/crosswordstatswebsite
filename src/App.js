@@ -4,7 +4,7 @@ import './App.css';
 
 
 const runScript = async (key, date) => {
-    let url = "https://vkuqm7h21l.execute-api.us-east-1.amazonaws.com/default/nic-crossword-lambda"
+    let url = "https://h9e25h7oj8.execute-api.us-east-1.amazonaws.com/default/nic-crossword-lambda"
     let request = {"auth_key": key, "earliest_date": date}
 	let response = await fetch(url, {
         method: "POST",
