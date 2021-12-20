@@ -1,87 +1,210 @@
 import { useEffect, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import Plot from 'react-plotly.js';
+import Papa, { parse } from 'papaparse';
 
+
+function determineNumChunks(inputDate, currentDate) {
+    let thirtyDays = 1000*60*60*24*30;
+
+    let incrementDate = new Date(inputDate.getTime() + thirtyDays);
+    let numChunks = 0;
+
+    while (incrementDate < currentDate) {
+        numChunks++;
+        incrementDate = new Date(incrementDate.getTime() +  thirtyDays);
+        if (incrementDate >= currentDate) {
+            numChunks++;
+            break;
+        }
+    }
+
+    return numChunks;
+}
 
 const runScript = async (key, date) => {
     let url = "https://h9e25h7oj8.execute-api.us-east-1.amazonaws.com/default/nic-crossword-lambda"
-    let request = {"auth_key": key, "earliest_date": date}
-	let response = await fetch(url, {
-        method: "POST",
-        header: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(request)
-    }) 
-	let image = await response.json()
-    console.log(image);
-    if (image["message"] !== "auth key or date not provided" && image["message"] !== "sorry, something went wrong") {
-        let returnString = Buffer.from(image["content"], 'base64').toString('utf8')
-        return returnString
+    let dataBuffer = [];
+
+    let thirtyDays = 1000*60*60*24*30;
+    let oneDay = 1000*60*60*24;
+
+    let inputDate = new Date(date);
+    let currentDate = new Date();
+
+    let numChunks = determineNumChunks(inputDate, currentDate);
+
+    let incrementDate = new Date(inputDate.getTime() + thirtyDays);
+
+    while (incrementDate < currentDate) {
+        let startDate = new Date(incrementDate.getTime() - thirtyDays).toISOString().slice(0,10);
+        let endDate = new Date(incrementDate).toISOString().slice(0,10);
+
+        let request = {"auth_key": key, "earliest_date": startDate, "end_date": endDate};
+        let response = await fetch(url, {
+            method: "POST",
+            header: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(request)
+        }) 
+        
+        let responseJson = await response.json();
+        if (responseJson.hasOwnProperty('message')) {
+            return responseJson;
+        }
+        dataBuffer.push(responseJson["content"]);
+        document.getElementById('chunkLoading').value = 100 / numChunks;
+        numChunks--;
+
+        incrementDate = new Date(incrementDate.getTime() +  thirtyDays);
+
+        if (incrementDate >= currentDate) {
+            // We probably overshot so we need to get the last chunk up to today
+            startDate = new Date(endDate).toISOString().slice(0,10);
+            endDate = new Date(currentDate.getTime() - oneDay).toISOString().slice(0,10);
+            request = {"auth_key": key, "earliest_date": startDate, "end_date": endDate};
+
+            let lastChunk = await fetch(url, {
+                method: "POST",
+                header: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(request)
+            });
+
+            let lastChunkJson = await lastChunk.json();
+            dataBuffer.push(lastChunkJson["content"]);
+            document.getElementById('chunkLoading').value = 100;
+            break;
+        }
     }
-  	return 
+    
+    console.log(dataBuffer);
+    
+  	return dataBuffer;
 }
 
 
 
 const App = () => {
-    const [output, setOutput] = useState("");
+    const [isLoading, setIsLoading] = useState(true);
     const [authKey, setAuthKey] = useState("");
     const [date, setDate] = useState("");
     const [isSubmit, setIsSubmit] = useState(false);
-
-    // useEffect(() => {
-    //     const run = async () => {
-    //         let out;
-    //         if (localStorage.getItem("token") !== null) {
-    //             out = await runScript(localStorage.getItem("token"))
-    //         } else {
-    //             out = await runScript(authKey, date);
-    //         }
-
-    //         if (out != null) {
-    //             let img = out.indexOf("<svg ")
-    //             let blob = new Blob([out.substr(img)], {type: 'image/svg+xml'})
-    //             let url = URL.createObjectURL(blob)
-    //             let image = document.createElement('img')
-    //             image.addEventListener('load', () => URL.revokeObjectURL(url), {once: true})
-    //             setOutput(url);
-                
-    //         }         
-			
-    //     }
-    //     run();
-
-    // }, [authKey, date]);
+    const [isError, setIsError] = useState(false);
+    const [plotData, setPlotData] = useState([]);
 
     async function afterSubmission(event) {
-        event.preventDefault()
         setIsSubmit(true)
+        event.preventDefault()
         let out;
         out = await runScript(authKey, date);
-        let img = out.indexOf("<svg ")
-        let blob = new Blob([out.substr(img)], {type: 'image/svg+xml'})
-        let url = URL.createObjectURL(blob)
-        let image = document.createElement('img')
-        image.addEventListener('load', () => URL.revokeObjectURL(url), {once: true})
-        setOutput(url);
+        if (out.hasOwnProperty('message')) {
+            setIsError(true);
+        } else {
+            let parsedArray = [];
+            for (var i = 0; i < out.length; i++) {
+                let chunkJson = Papa.parse(out[i], {
+                    header: true,
+                    dynamicTyping: true
+                });
+                console.log(chunkJson);
+                let lastDate; 
+                for (var j = 0; j < chunkJson["data"].length; j++) {
+                    if (chunkJson["data"][j]["date"] !== null) {
+                        if (j !== 0) {
+                            if (chunkJson["data"][j]["date"] !== lastDate["date"]) {
+                                parsedArray.push(chunkJson["data"][j]);
+                            }
+                        }
+                        lastDate = chunkJson["data"][j];
+                    }
+                }
+            }
+            let DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            let byDayArray = [];
+            for (var l = 0; l < DAYS.length; l++) {
+                let dayArray = [];
+                for (var k = 0; k < parsedArray.length; k++) {
+                    if (parsedArray[k]["weekday"] === DAYS[l]) {
+                        dayArray.push(parsedArray[k])
+                    }
+                }
+                byDayArray[DAYS[l]] = dayArray;
+            }
+
+            // To plot our data, we need an array of numbers of solve times
+            // and an array of dates they're from. Now we have every day of
+            // the week as seperate arrays of JSON.
+            // The format of this byDayArray is:
+            // byDayArray = {Mon: [0: {date: 'YYYY-MM-DD', solve_time_sec: 0, ...}, 1: {...}, ...], Tue: [...], ...}
+            
+            
+            let lineData = [];
+        
+            for (var day of DAYS) {
+                let dayArray = byDayArray[day];
+                let xArr = [];
+                let yArr = [];
+                for (var solve of dayArray) {
+                    xArr.push(solve["date"]);
+                    yArr.push(solve["solve_time_secs"] / 60);
+                }
+                lineData.push({x: xArr, y: yArr, mode: 'lines', name: day})
+            }
+
+            
+            console.log(byDayArray);
+            console.log(lineData);
+            setPlotData(lineData);
+            setIsLoading(false);
+        }
+
+        // let img = out.indexOf("<svg ")
+        // let blob = new Blob([out.substr(img)], {type: 'image/svg+xml'})
+        // let url = URL.createObjectURL(blob)
+        // let image = document.createElement('img')
+        // image.addEventListener('load', () => URL.revokeObjectURL(url), {once: true})
+        //setOutput(url);
+
     }
 
     return (
         <div className="App">
         <header className="App-header">
             <div>
-                {isSubmit && (
+                {isSubmit && !isError && (
                     <div>
-                        {output === "" && (
-                            <p>
-                                loading... (this might take a minute or two)
-                            </p>
+                        {isLoading && (
+                            <progress id="chunkLoading" value="0" max="100">0 % of data downloaded</progress>
                         )}
-                        {output !== "" && (
-                            <p>
-                                <img alt="plot" src={output} width="1000" height="700" />
-                            </p>
+                        {!isLoading && (
+                            <Plot
+                                data={plotData}
+                            // data={[
+                            //   {
+                            //     x: [1, 2, 3],
+                            //     y: [2, 6, 3],
+                            //     type: 'scatter',
+                            //     mode: 'lines+markers',
+                            //     marker: {color: 'red'},
+                            //   },
+                            //   {type: 'bar', x: [1, 2, 3], y: [2, 5, 3]},
+                            // ]}
+                            layout={ {
+                                width: 740, 
+                                height: 580, 
+                                title: 'NYT Crossword Solves Over Time',
+                                colorway: ['#377eb8', '#ff7f00', '#4daf4a',
+                                '#f781bf', '#a65628', '#984ea3',
+                                '#999999']
+                            } }
+                          />
+                            // <p>
+                            //     <img alt="plot" src={output} width="1000" height="700" />
+                            // </p>
                         )}
                     </div>
                 )}
@@ -112,6 +235,14 @@ const App = () => {
                             <br/>
                             <input type="submit"/>
                         </form>
+                    </div>
+                )}
+
+                {isError && isSubmit && (
+                    <div>
+                        <p>
+                            Sorry, something went wrong. Please try again.
+                        </p>
                     </div>
                 )}
             </div>
