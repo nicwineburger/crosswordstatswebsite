@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
-import logo from './logo.svg';
+import { useState } from 'react';
 import './App.css';
 import Plot from 'react-plotly.js';
-import Papa, { parse } from 'papaparse';
+import Papa from 'papaparse';
 
 
 function determineNumChunks(inputDate, currentDate) {
@@ -23,8 +22,20 @@ function determineNumChunks(inputDate, currentDate) {
     return numChunks;
 }
 
-const runScript = async (key, date) => {
+async function getData(requestObject) {
     let url = "https://h9e25h7oj8.execute-api.us-east-1.amazonaws.com/default/nic-crossword-lambda"
+    let response = await fetch(url, {
+        method: "POST",
+        header: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestObject)
+    }) 
+    
+    return await response.json();
+}
+
+const runScript = async (key, date) => {
     let dataBuffer = [];
 
     let thirtyDays = 1000*60*60*24*30;
@@ -42,15 +53,7 @@ const runScript = async (key, date) => {
         let endDate = new Date(incrementDate).toISOString().slice(0,10);
 
         let request = {"auth_key": key, "earliest_date": startDate, "end_date": endDate};
-        let response = await fetch(url, {
-            method: "POST",
-            header: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(request)
-        }) 
-        
-        let responseJson = await response.json();
+        let responseJson = await getData(request);
         if (responseJson.hasOwnProperty('message')) {
             return responseJson;
         }
@@ -65,16 +68,7 @@ const runScript = async (key, date) => {
             startDate = new Date(endDate).toISOString().slice(0,10);
             endDate = new Date(currentDate.getTime() - oneDay).toISOString().slice(0,10);
             request = {"auth_key": key, "earliest_date": startDate, "end_date": endDate};
-
-            let lastChunk = await fetch(url, {
-                method: "POST",
-                header: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(request)
-            });
-
-            let lastChunkJson = await lastChunk.json();
+            let lastChunkJson = await getData(request);
             dataBuffer.push(lastChunkJson["content"]);
             document.getElementById('chunkLoading').value = 100;
             break;
@@ -161,14 +155,6 @@ const App = () => {
             setPlotData(lineData);
             setIsLoading(false);
         }
-
-        // let img = out.indexOf("<svg ")
-        // let blob = new Blob([out.substr(img)], {type: 'image/svg+xml'})
-        // let url = URL.createObjectURL(blob)
-        // let image = document.createElement('img')
-        // image.addEventListener('load', () => URL.revokeObjectURL(url), {once: true})
-        //setOutput(url);
-
     }
 
     return (
@@ -183,28 +169,13 @@ const App = () => {
                         {!isLoading && (
                             <Plot
                                 data={plotData}
-                            // data={[
-                            //   {
-                            //     x: [1, 2, 3],
-                            //     y: [2, 6, 3],
-                            //     type: 'scatter',
-                            //     mode: 'lines+markers',
-                            //     marker: {color: 'red'},
-                            //   },
-                            //   {type: 'bar', x: [1, 2, 3], y: [2, 5, 3]},
-                            // ]}
-                            layout={ {
-                                width: 740, 
-                                height: 580, 
-                                title: 'NYT Crossword Solves Over Time',
-                                colorway: ['#377eb8', '#ff7f00', '#4daf4a',
-                                '#f781bf', '#a65628', '#984ea3',
-                                '#999999']
-                            } }
+                                layout={{
+                                    width: 740, 
+                                    height: 580, 
+                                    title: 'NYT Crossword Solves Over Time',
+                                    colorway: ['#377eb8', '#ff7f00', '#4daf4a', '#f781bf', '#a65628', '#984ea3', '#999999']
+                                }}
                           />
-                            // <p>
-                            //     <img alt="plot" src={output} width="1000" height="700" />
-                            // </p>
                         )}
                     </div>
                 )}
