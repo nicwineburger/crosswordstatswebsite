@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import './App.css';
-import Plot from 'react-plotly.js';
 import Papa from 'papaparse';
+import ErrorPage from './pages/ErrorPage';
+import LandingPage from './pages/LandingPage';
+import LoadingPage from './pages/LoadingPage';
+import PlotPage from './pages/PlotPage';
 
 
 function determineNumChunks(inputDate, currentDate) {
@@ -35,7 +38,7 @@ async function getData(requestObject) {
     return await response.json();
 }
 
-const runScript = async (key, date) => {
+const runScript = async (key, date, setProgressBar) => {
     let dataBuffer = [];
 
     let thirtyDays = 1000*60*60*24*30;
@@ -44,7 +47,8 @@ const runScript = async (key, date) => {
     let inputDate = new Date(date);
     let currentDate = new Date();
 
-    let numChunks = determineNumChunks(inputDate, currentDate);
+    let initialNumChunks = determineNumChunks(inputDate, currentDate);
+    let curNumChunks = 1;
 
     let incrementDate = new Date(inputDate.getTime() + thirtyDays);
 
@@ -58,8 +62,8 @@ const runScript = async (key, date) => {
             return responseJson;
         }
         dataBuffer.push(responseJson["content"]);
-        document.getElementById('chunkLoading').value = 100 / numChunks;
-        numChunks--;
+        setProgressBar(Math.floor((curNumChunks / initialNumChunks) * 100));
+        curNumChunks += 1;
 
         incrementDate = new Date(incrementDate.getTime() +  thirtyDays);
 
@@ -70,7 +74,7 @@ const runScript = async (key, date) => {
             request = {"auth_key": key, "earliest_date": startDate, "end_date": endDate};
             let lastChunkJson = await getData(request);
             dataBuffer.push(lastChunkJson["content"]);
-            document.getElementById('chunkLoading').value = 100;
+            setProgressBar(100);
             break;
         }
     }
@@ -89,12 +93,13 @@ const App = () => {
     const [isSubmit, setIsSubmit] = useState(false);
     const [isError, setIsError] = useState(false);
     const [plotData, setPlotData] = useState([]);
+    const [progressBar, setProgressBar] = useState(0);
 
     async function afterSubmission(event) {
         setIsSubmit(true)
         event.preventDefault()
         let out;
-        out = await runScript(authKey, date);
+        out = await runScript(authKey, date, setProgressBar);
         if (out.hasOwnProperty('message')) {
             setIsError(true);
         } else {
@@ -164,57 +169,22 @@ const App = () => {
                 {isSubmit && !isError && (
                     <div>
                         {isLoading && (
-                            <progress id="chunkLoading" value="0" max="100">0 % of data downloaded</progress>
+                            <LoadingPage progressBar={progressBar} />
                         )}
                         {!isLoading && (
-                            <Plot
-                                data={plotData}
-                                layout={{
-                                    width: 740, 
-                                    height: 580, 
-                                    title: 'NYT Crossword Solves Over Time',
-                                    colorway: ['#377eb8', '#ff7f00', '#4daf4a', '#f781bf', '#a65628', '#984ea3', '#999999']
-                                }}
-                          />
+                            <PlotPage plotData={plotData} width={740} height={580} />
                         )}
                     </div>
                 )}
 
                 {!isSubmit && (
-                    <div>
-                        <p>
-                        <a href="https://github.com/nicwineburger/crosswordstatswebsite/wiki/Getting-Your-NYT-Auth-Token">Click here for instructions on how to get your auth-key from the NYT</a>
-                        </p>
-                        <form onSubmit={(e) => afterSubmission(e)}>
-                            <label>Enter your auth-key:
-                            <br/>
-                            <input
-                                type="text"
-                                value={authKey}
-                                onChange={(e) => setAuthKey(e.target.value)}
-                            />
-                            </label>
-                            <br/>
-                            <label>Enter earliest date (YYYY-MM-DD):
-                            <br/>
-                            <input
-                                type="text"
-                                value={date}
-                                onChange={(e) => setDate(e.target.value)}
-                            />
-                            </label>
-                            <br/>
-                            <input type="submit"/>
-                        </form>
-                    </div>
+                    <LandingPage afterSubmission={afterSubmission}
+                        authKey={authKey} setAuthKey={setAuthKey}
+                        date={date} setDate={setDate} />
                 )}
 
                 {isError && isSubmit && (
-                    <div>
-                        <p>
-                            Sorry, something went wrong. Please try again.
-                        </p>
-                    </div>
+                    <ErrorPage />
                 )}
             </div>
         </header>
