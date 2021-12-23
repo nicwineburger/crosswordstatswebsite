@@ -6,6 +6,28 @@ import LandingPage from './pages/LandingPage';
 import LoadingPage from './pages/LoadingPage';
 import PlotPage from './pages/PlotPage';
 
+function cumulativeRollingAverage(data) {
+    var cmaData = [];
+    for (var weekDay of data) {
+        var newData = JSON.parse(JSON.stringify(weekDay));
+
+        var cma = [];
+        var acc = [];
+        for (var daySolveTime of newData.y) {
+            acc.push(daySolveTime);
+            var currAvg = acc.reduce((a, b) => a + b, 0);
+            var cmaToday = currAvg / acc.length;
+            cma.push(cmaToday);
+        }
+        newData.y = cma;
+        newData['visible'] = false;
+        cmaData.push(newData);
+    }
+
+    return cmaData;
+
+}
+
 
 function determineNumChunks(inputDate, currentDate) {
     let thirtyDays = 1000*60*60*24*30;
@@ -79,8 +101,6 @@ const runScript = async (key, date, setProgressBar) => {
         }
     }
     
-    console.log(dataBuffer);
-    
   	return dataBuffer;
 }
 
@@ -94,6 +114,7 @@ const App = () => {
     const [isError, setIsError] = useState(false);
     const [plotData, setPlotData] = useState([]);
     const [progressBar, setProgressBar] = useState(0);
+    
 
     async function afterSubmission(event) {
         setIsSubmit(true)
@@ -109,7 +130,7 @@ const App = () => {
                     header: true,
                     dynamicTyping: true
                 });
-                console.log(chunkJson);
+
                 let lastDate; 
                 for (var j = 0; j < chunkJson["data"].length; j++) {
                     if (chunkJson["data"][j]["date"] !== null) {
@@ -141,7 +162,7 @@ const App = () => {
             // byDayArray = {Mon: [0: {date: 'YYYY-MM-DD', solve_time_sec: 0, ...}, 1: {...}, ...], Tue: [...], ...}
             
             
-            let lineData = [];
+            const rawData = [];
         
             for (var day of DAYS) {
                 let dayArray = byDayArray[day];
@@ -151,13 +172,13 @@ const App = () => {
                     xArr.push(solve["date"]);
                     yArr.push(solve["solve_time_secs"] / 60);
                 }
-                lineData.push({x: xArr, y: yArr, mode: 'lines', name: day})
+                rawData.push({x: xArr, y: yArr, mode: 'lines', name: day})
             }
-
             
-            console.log(byDayArray);
-            console.log(lineData);
-            setPlotData(lineData);
+            const cmaData = cumulativeRollingAverage(rawData);
+            const allData = [rawData, cmaData];
+            
+            setPlotData(allData);
             setIsLoading(false);
         }
     }
