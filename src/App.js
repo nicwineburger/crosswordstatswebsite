@@ -5,6 +5,7 @@ import ErrorPage from './pages/ErrorPage';
 import LandingPage from './pages/LandingPage';
 import LoadingPage from './pages/LoadingPage';
 import PlotPage from './pages/PlotPage';
+import CsvDownloader from 'react-csv-downloader';
 
 function cumulativeRollingAverage(data) {
     var cmaData = [];
@@ -60,7 +61,7 @@ async function getData(requestObject) {
     return await response.json();
 }
 
-const runScript = async (key, date, setProgressBar) => {
+const runScript = async (key, date, setProgressBar, setFileName) => {
     let dataBuffer = [];
 
     let thirtyDays = 1000*60*60*24*30;
@@ -68,6 +69,9 @@ const runScript = async (key, date, setProgressBar) => {
 
     let inputDate = new Date(date);
     let currentDate = new Date();
+
+    let fileName = `CrosswordData_${inputDate.toISOString().slice(0,10)}_to_${currentDate.toISOString().slice(0,10)}`;
+    setFileName(fileName);
 
     let initialNumChunks = determineNumChunks(inputDate, currentDate);
     let curNumChunks = 1;
@@ -92,7 +96,7 @@ const runScript = async (key, date, setProgressBar) => {
         if (incrementDate >= currentDate) {
             // We probably overshot so we need to get the last chunk up to today
             startDate = new Date(endDate).toISOString().slice(0,10);
-            endDate = new Date(currentDate.getTime() - oneDay).toISOString().slice(0,10);
+            endDate = new Date(currentDate.getTime()).toISOString().slice(0,10);
             request = {"auth_key": key, "earliest_date": startDate, "end_date": endDate};
             let lastChunkJson = await getData(request);
             dataBuffer.push(lastChunkJson["content"]);
@@ -114,13 +118,15 @@ const App = () => {
     const [isError, setIsError] = useState(false);
     const [plotData, setPlotData] = useState([]);
     const [progressBar, setProgressBar] = useState(0);
+    const [csvData, setCsvData] = useState([]);
+    const [fileName, setFileName] = useState("");
     
 
     async function afterSubmission(event) {
         setIsSubmit(true)
         event.preventDefault()
         let out;
-        out = await runScript(authKey, date, setProgressBar);
+        out = await runScript(authKey, date, setProgressBar, setFileName);
         if (out.hasOwnProperty('message')) {
             setIsError(true);
         } else {
@@ -143,6 +149,11 @@ const App = () => {
                     }
                 }
             }
+
+            const csvData = [];
+            csvData.push(...parsedArray);
+            setCsvData(csvData);
+            
             let DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
             let byDayArray = [];
             for (var l = 0; l < DAYS.length; l++) {
@@ -193,7 +204,21 @@ const App = () => {
                             <LoadingPage progressBar={progressBar} />
                         )}
                         {!isLoading && (
-                            <PlotPage plotData={plotData} width={740} height={580} />
+                            <div>
+                                <div> 
+                                    <CsvDownloader 
+                                        id='downloadButton'
+                                        filename={fileName}
+                                        extension='.csv'
+                                        datas={csvData}
+                                        text='Download data as CSV'
+                                        hidden
+                                    />
+                                <div>
+                                    <PlotPage plotData={plotData} csvData={csvData} width={740} height={580} />
+                                </div>
+                            </div>
+                            </div>
                         )}
                     </div>
                 )}
