@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "https://www.crosswordstats.com",
   "dependencies": {
+    "@dropzone-ui/react": "^6.4.2",
     "@emotion/react": "^11.7.0",
     "@emotion/styled": "^11.6.0",
     "@fontsource/roboto": "^4.5.1",
@@ -12,10 +13,8 @@
     "@testing-library/jest-dom": "^5.15.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
-    "danfojs": "^0.3.4",
     "js": "^0.1.0",
     "papaparse": "^5.3.1",
-    "plotly": "^1.0.6",
     "plotly.js": "^2.8.1",
     "prop-types": "^15.7.2",
     "react": "^17.0.2",

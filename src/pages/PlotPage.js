@@ -15,16 +15,30 @@ function createTraces(data) {
     return traceArray;
 }
 
-function simulateClick(e) {
-    e.click();
+function getData(isFileParse, files, plotData, parseData, setCsvData) {
+    if (!isFileParse) {
+        let data = createTraces(plotData);
+    } else {
+        // TODO: This is broken. Need to figure out how to get file object as string
+        //       Tried using the reader.onload example that's online, but it didn't continously
+        //       instead of firing once. Literally just need to get a string to pass to parseData ONCE
+        let reader = new FileReader();
+        let fileData = [];
+
+        let data = reader.readAsText(files[0].file).result;
+        fileData.push(data);
+        console.log(fileData);
+        let parseFileData = parseData(fileData, setCsvData);
+        return createTraces(parseFileData);
+    } 
 }
 
 var rawVisible = [true, true, true, true, true, true, true, false, false, false, false, false, false, false]
 var cmaVisible = [false, false, false, false, false, false, false, true, true, true, true, true, true, true]
 
 function PlotPage(props) {
+    var data = getData(props.isFileParse, props.files, props.plotData, props.parseData, props.setCsvData);    
 
-    var data = createTraces(props.plotData);
     
     var updatemenus = [
         {
@@ -69,7 +83,8 @@ function PlotPage(props) {
             zeroline: true
             //autorange: true,
         },
-        modbardisplay: false
+        modebardisplay: false
+        
     }
 
     var downloadIcon = {
@@ -90,7 +105,9 @@ function PlotPage(props) {
                     csvButton.click();
                 }
             }
-        ]
+        ],
+        displaylogo: false,
+        displayModeBar: true
     }
 
     return (

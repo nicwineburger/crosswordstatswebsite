@@ -6,6 +6,7 @@ import LandingPage from './pages/LandingPage';
 import LoadingPage from './pages/LoadingPage';
 import PlotPage from './pages/PlotPage';
 import CsvDownloader from 'react-csv-downloader';
+import {Dropzone, FileItem} from '@dropzone-ui/react';
 
 function cumulativeRollingAverage(data) {
     var cmaData = [];
@@ -108,7 +109,68 @@ const runScript = async (key, date, setProgressBar, setFileName) => {
   	return dataBuffer;
 }
 
+function parseData(incomingData, setCsvData) {
+    let parsedArray = [];
+    for (var i = 0; i < incomingData.length; i++) {
+        let chunkJson = Papa.parse(incomingData[i], {
+            header: true,
+            dynamicTyping: true
+        });
 
+        let lastDate; 
+        for (var j = 0; j < chunkJson["data"].length; j++) {
+            if (chunkJson["data"][j]["date"] !== null) {
+                if (j !== 0) {
+                    if (chunkJson["data"][j]["date"] !== lastDate["date"]) {
+                        parsedArray.push(chunkJson["data"][j]);
+                    }
+                }
+                lastDate = chunkJson["data"][j];
+            }
+        }
+    }
+
+    const csvData = [];
+    csvData.push(...parsedArray);
+    setCsvData(csvData);
+    
+    let DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    let byDayArray = [];
+    for (var l = 0; l < DAYS.length; l++) {
+        let dayArray = [];
+        for (var k = 0; k < parsedArray.length; k++) {
+            if (parsedArray[k]["weekday"] === DAYS[l]) {
+                dayArray.push(parsedArray[k])
+            }
+        }
+        byDayArray[DAYS[l]] = dayArray;
+    }
+
+    // To plot our data, we need an array of numbers of solve times
+    // and an array of dates they're from. Now we have every day of
+    // the week as seperate arrays of JSON.
+    // The format of this byDayArray is:
+    // byDayArray = {Mon: [0: {date: 'YYYY-MM-DD', solve_time_sec: 0, ...}, 1: {...}, ...], Tue: [...], ...}
+    
+    
+    const rawData = [];
+
+    for (var day of DAYS) {
+        let dayArray = byDayArray[day];
+        let xArr = [];
+        let yArr = [];
+        for (var solve of dayArray) {
+            xArr.push(solve["date"]);
+            yArr.push(solve["solve_time_secs"] / 60);
+        }
+        rawData.push({x: xArr, y: yArr, mode: 'lines', name: day})
+    }
+    
+    const cmaData = cumulativeRollingAverage(rawData);
+    const allData = [rawData, cmaData];
+    
+    return allData;
+}
 
 const App = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -120,7 +182,8 @@ const App = () => {
     const [progressBar, setProgressBar] = useState(0);
     const [csvData, setCsvData] = useState([]);
     const [fileName, setFileName] = useState("");
-    
+    const [isFileParse, setIsFileParse] = useState(false); 
+    const [files, setFiles] = useState([]);
 
     async function afterSubmission(event) {
         setIsSubmit(true)
@@ -130,64 +193,7 @@ const App = () => {
         if (out.hasOwnProperty('message')) {
             setIsError(true);
         } else {
-            let parsedArray = [];
-            for (var i = 0; i < out.length; i++) {
-                let chunkJson = Papa.parse(out[i], {
-                    header: true,
-                    dynamicTyping: true
-                });
-
-                let lastDate; 
-                for (var j = 0; j < chunkJson["data"].length; j++) {
-                    if (chunkJson["data"][j]["date"] !== null) {
-                        if (j !== 0) {
-                            if (chunkJson["data"][j]["date"] !== lastDate["date"]) {
-                                parsedArray.push(chunkJson["data"][j]);
-                            }
-                        }
-                        lastDate = chunkJson["data"][j];
-                    }
-                }
-            }
-
-            const csvData = [];
-            csvData.push(...parsedArray);
-            setCsvData(csvData);
-            
-            let DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            let byDayArray = [];
-            for (var l = 0; l < DAYS.length; l++) {
-                let dayArray = [];
-                for (var k = 0; k < parsedArray.length; k++) {
-                    if (parsedArray[k]["weekday"] === DAYS[l]) {
-                        dayArray.push(parsedArray[k])
-                    }
-                }
-                byDayArray[DAYS[l]] = dayArray;
-            }
-
-            // To plot our data, we need an array of numbers of solve times
-            // and an array of dates they're from. Now we have every day of
-            // the week as seperate arrays of JSON.
-            // The format of this byDayArray is:
-            // byDayArray = {Mon: [0: {date: 'YYYY-MM-DD', solve_time_sec: 0, ...}, 1: {...}, ...], Tue: [...], ...}
-            
-            
-            const rawData = [];
-        
-            for (var day of DAYS) {
-                let dayArray = byDayArray[day];
-                let xArr = [];
-                let yArr = [];
-                for (var solve of dayArray) {
-                    xArr.push(solve["date"]);
-                    yArr.push(solve["solve_time_secs"] / 60);
-                }
-                rawData.push({x: xArr, y: yArr, mode: 'lines', name: day})
-            }
-            
-            const cmaData = cumulativeRollingAverage(rawData);
-            const allData = [rawData, cmaData];
+            let allData = parseData(out, setCsvData)
             
             setPlotData(allData);
             setIsLoading(false);
@@ -223,10 +229,16 @@ const App = () => {
                     </div>
                 )}
 
-                {!isSubmit && (
+                {!isSubmit && !isFileParse && (
                     <LandingPage afterSubmission={afterSubmission}
                         authKey={authKey} setAuthKey={setAuthKey}
-                        date={date} setDate={setDate} />
+                        date={date} setDate={setDate} isFileParse={isFileParse}
+                        setIsFileParse={setIsFileParse} files={files} setFiles={setFiles}/>
+                )}
+
+                {isFileParse && (
+                    <PlotPage plotData={plotData} width={740} height={540} isFileParse={isFileParse} 
+                              parseData={parseData} files={files} setCsvData={setCsvData}/>
                 )}
 
                 {isError && isSubmit && (
