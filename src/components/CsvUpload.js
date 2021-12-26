@@ -14,9 +14,8 @@ function csvChanged(event, setPlotData) {
         console.log('loading file content')
 
         let filecontent = readFile.target.result;
-        // turn filecontent into array of lines
-        let lines = filecontent.split(/[\r\n]+/g)
-        setPlotData(lines);
+        // data is expected to be an array of csv strings
+        setPlotData([filecontent]);
     };
     reader.readAsText(event.target.files[0]);
 }
