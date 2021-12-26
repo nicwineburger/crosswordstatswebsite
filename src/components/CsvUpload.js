@@ -24,10 +24,8 @@ function CsvUpload(props) {
     return (
         <div>
             <p>Or, upload a CSV:</p>
-            <form id="myform" onChange={(event) => {csvChanged(event, props.setPlotData)}}>
-                <p>
-                    <input id="myfile" type="file" />
-                </p>
+            <form id="myForm" onChange={(event) => {csvChanged(event, props.setPlotData)}}>
+                <input id="myfile" type="file" />
             </form>
         </div>
     );

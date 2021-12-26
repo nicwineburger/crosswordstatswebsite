@@ -211,28 +211,20 @@ const App = () => {
         <div className="App">
         <header className="App-header">
             <div>
-                {isSubmit && !isError && (
-                    <div>
-                        {isLoading && (
-                            <LoadingPage progressBar={progressBar} />
-                        )}
-                        {!isLoading && (
-                            <div>
-                                <div> 
-                                    <CsvDownloader 
-                                        id='downloadButton'
-                                        filename={fileName}
-                                        extension='.csv'
-                                        datas={csvData}
-                                        text='Download data as CSV'
-                                        hidden
-                                    />
-                                <div>
-                                    <PlotPage plotData={plotData} csvData={csvData} width={740} height={580} />
-                                </div>
-                            </div>
-                            </div>
-                        )}
+                {isSubmit && !isError && isLoading &&
+                    <LoadingPage progressBar={progressBar} />
+                }
+                {isSubmit && !isError && !isLoading && (
+                    <div> 
+                        <CsvDownloader 
+                            id='downloadButton'
+                            filename={fileName}
+                            extension='.csv'
+                            datas={csvData}
+                            text='Download data as CSV'
+                            hidden
+                        />
+                        <PlotPage plotData={plotData} csvData={csvData} width={740} height={580} />
                     </div>
                 )}
 

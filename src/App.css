@@ -36,3 +36,16 @@
     transform: rotate(360deg);
   }
 }
+
+a {
+  color: #a52a2a;
+}
+
+.FlexContainer {
+  display: flex;
+  justify-content: space-between;
+}
+
+#myForm {
+  padding-left: 50px;
+}
