@@ -6,7 +6,6 @@ import LandingPage from './pages/LandingPage';
 import LoadingPage from './pages/LoadingPage';
 import PlotPage from './pages/PlotPage';
 import CsvDownloader from 'react-csv-downloader';
-import {Dropzone, FileItem} from '@dropzone-ui/react';
 
 function cumulativeRollingAverage(data) {
     var cmaData = [];
@@ -65,8 +64,8 @@ async function getData(requestObject) {
 const runScript = async (key, date, setProgressBar, setFileName) => {
     let dataBuffer = [];
 
-    let thirtyDays = 1000*60*60*24*30;
     let oneDay = 1000*60*60*24;
+    let thirtyDays = 30 * oneDay;
 
     let inputDate = new Date(date);
     let currentDate = new Date();

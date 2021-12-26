@@ -2,7 +2,7 @@ function csvChanged(event, setPlotData) {
     console.log('csv changed')
     var reader = new FileReader();
     reader.onload = function(readFile) {
-        if(readFile.target.readyState != 2) {
+        if(readFile.target.readyState !== 2) {
             console.error('target wasn\'t ready')
             console.log(readFile.target.readyState)
             return;
@@ -22,11 +22,14 @@ function csvChanged(event, setPlotData) {
 
 function CsvUpload(props) {
     return (
-        <form id="myform" onChange={(event) => {csvChanged(event, props.setPlotData)}}>
-            <p>
-                <input id="myfile" type="file" />
-            </p>
-        </form>
+        <div>
+            <p>Or, upload a CSV:</p>
+            <form id="myform" onChange={(event) => {csvChanged(event, props.setPlotData)}}>
+                <p>
+                    <input id="myfile" type="file" />
+                </p>
+            </form>
+        </div>
     );
 }
 
