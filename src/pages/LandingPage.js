@@ -1,14 +1,6 @@
-import {Dropzone, FileItem} from '@dropzone-ui/react';
+import CsvUpload from '../components/CsvUpload';
 
 function LandingPage(props) {
-    const updateFiles = (incomingFiles, setFiles, setIsFileParse) => {
-        console.log(incomingFiles);
-
-        setFiles(incomingFiles);
-        setIsFileParse(true);
-
-    }
-
     return (
         <div>
             <div>
@@ -40,19 +32,7 @@ function LandingPage(props) {
                 </form>
             </div>
             <div>
-                <Dropzone
-                    style={{width: "500px", minHeight: "50px", display: "inline-block"}}
-                    label="Or upload a CSV file here:"
-                    footer={false}
-                    header={false}
-                    onChange={(files) => updateFiles(files, props.setFiles, props.setIsFileParse)}
-                    value={props.files}
-                >
-                    {props.files.map((file) => (
-                        <FileItem {...file} key={file.id} info />
-                    ))}
-
-                </Dropzone>
+                <CsvUpload setPlotData={props.parseDataAndDisplay} />
             </div>
         </div>
     );
