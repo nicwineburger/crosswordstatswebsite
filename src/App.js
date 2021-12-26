@@ -172,15 +172,6 @@ function parseData(incomingData, setCsvData) {
     return allData;
 }
 
-function parseDataAndDisplay(rawCsvString, setCsvData, setPlotData,
-    setIsLoading, setIsFileParse) {
-    console.log('Parsing and displaying')
-    let allData = parseData(rawCsvString, setCsvData);
-    setPlotData(allData);
-    setIsLoading(false);
-    setIsFileParse(true);
-}
-
 const App = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [authKey, setAuthKey] = useState("");
@@ -192,6 +183,7 @@ const App = () => {
     const [csvData, setCsvData] = useState([]);
     const [fileName, setFileName] = useState("");
     const [isFileParse, setIsFileParse] = useState(false); 
+    const [files, setFiles] = useState([]);
 
     async function afterSubmission(event) {
         setIsSubmit(true)
@@ -241,17 +233,12 @@ const App = () => {
                     <LandingPage afterSubmission={afterSubmission}
                         authKey={authKey} setAuthKey={setAuthKey}
                         date={date} setDate={setDate} isFileParse={isFileParse}
-                        setIsFileParse={setIsFileParse}
-                        parseDataAndDisplay={
-                            (rawCsvData) => parseDataAndDisplay(rawCsvData, setCsvData,
-                                setPlotData, setIsLoading, setIsFileParse)
-                        }
-                    />
+                        setIsFileParse={setIsFileParse} files={files} setFiles={setFiles}/>
                 )}
 
                 {isFileParse && (
                     <PlotPage plotData={plotData} width={740} height={540} isFileParse={isFileParse} 
-                              parseData={parseData} setCsvData={setCsvData}/>
+                              parseData={parseData} files={files} setCsvData={setCsvData}/>
                 )}
 
                 {isError && isSubmit && (
