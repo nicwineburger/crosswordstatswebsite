@@ -1,4 +1,5 @@
 import CsvUpload from '../components/CsvUpload';
+import githublogo from '../github-logo.svg';
 
 function LandingPage(props) {
     return (
@@ -32,6 +33,11 @@ function LandingPage(props) {
                 </div>
                 <CsvUpload setPlotData={props.parseDataAndDisplay} />
             </div>
+            <p>
+                <a href="https://github.com/nicwineburger/crosswordstatswebsite">
+                    <img src={githublogo} width={100} height={100}/>
+                </a>
+            </p>
         </div>
     );
 }
