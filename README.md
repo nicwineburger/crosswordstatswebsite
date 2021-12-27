@@ -25,6 +25,8 @@ Detailed GIFs demonstrating this process can be found on our [wiki](https://gith
 ### Downloading a CSV of your data
 In the plot menu bar there is an button that will download the data you requested into the raw CSV that we parse to make the plots. 
 
+![download-to-csv-instruction](https://user-images.githubusercontent.com/26394153/147510308-7b1c8da3-5a8b-4b15-8ae9-6f5a6028c0f6.png)
+
 ### Uploading a CSV of your own data
 CSV's need to be in the right format for plotting. The headers for the file are:
 
