@@ -1,7 +1,7 @@
 # Crossword Stats Website
 
 ## Overview
-Welcome to the CrosswordStats Website! As an avid fan of solving the NYT Daily Crossword, I found the statistics exposed to users a bit lacking and thought it would be fun to let other people comb through their own data. For instructions on how to get access to your NYT Crossword data please see the _Users_ section. For developers who want details on how the website is set up and instructions for how to contribute, please see the _Developers_ section.
+Welcome to the CrosswordStats Website! As an avid fan of solving the NYT Daily Crossword, I found the statistics exposed to users a bit lacking and thought it would be fun to let other people comb through their own data. For instructions on how to get access to your NYT Crossword data please see the [Users](https://github.com/nicwineburger/crosswordstatswebsite#users) section. For developers who want details on how the website is set up and instructions for how to contribute, please see the [Developers](https://github.com/nicwineburger/crosswordstatswebsite#developers) section.
 
 ## Users
 
