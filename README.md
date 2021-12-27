@@ -1,7 +1,7 @@
-# crosswordstatswebsite
+# Crossword Stats Website
 
 ## Overview
-Welcome to the CrosswordStats website! As an avid fan of solving the NYT Daily Crossword, I found the statistics exposed to users a bit lacking and thought it would be fun to let other people comb through their own data. For instructions on how to get access to your NYT Crossword data please see the _Users_ section. For developers who want details on how the website is set up and instructions for how to contribute, please see the _Developers_ section.
+Welcome to the CrosswordStats Website! As an avid fan of solving the NYT Daily Crossword, I found the statistics exposed to users a bit lacking and thought it would be fun to let other people comb through their own data. For instructions on how to get access to your NYT Crossword data please see the _Users_ section. For developers who want details on how the website is set up and instructions for how to contribute, please see the _Developers_ section.
 
 ## Users
 
@@ -43,6 +43,7 @@ If you'd like to contribute to the frontend (which you should do!) please create
 The backend of the website is based on [this repository](https://github.com/nicwineburger/crossword). Please go there to learn more. 
 
 ### Todo's and Future Ideas
+- [ ] Automatically resize elements so the site isn't broken on mobile
 - [ ] Automatically getting a users' NYT auth-token (probably impossible)
 - [ ] More statistics (rolling average, violin plots, etc)
 - [ ] Migrating to TypeScript
