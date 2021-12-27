@@ -7,6 +7,8 @@ Welcome to the CrosswordStats website! As an avid fan of solving the NYT Daily C
 
 ### Getting your NYT auth-token
 
+Detailed GIFs demonstrating this process can be found on our [wiki](https://github.com/nicwineburger/crosswordstatswebsite/wiki/Getting-Your-NYT-Auth-Token)
+
 - Go to https://www.nytimes.com/crosswords
 - Open developer tools
 - Go to the Network tab
@@ -17,6 +19,8 @@ Welcome to the CrosswordStats website! As an avid fan of solving the NYT Daily C
 - Scroll down to the "Request Headers" section
 - Right click on the "nyt-s" field and select "Copy value"
 - Paste this into the text field on the crosswordstats website or save it somewhere else
+
+
 
 ### Downloading a CSV of your data
 In the plot menu bar there is an button that will download the data you requested into the raw CSV that we parse to make the plots. 
