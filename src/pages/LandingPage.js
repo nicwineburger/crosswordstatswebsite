@@ -7,6 +7,8 @@ function LandingPage(props) {
             <a href="https://github.com/nicwineburger/crosswordstatswebsite/wiki/Getting-Your-NYT-Auth-Token">
                 Click here for instructions on how to get your auth-key from the NYT
             </a>
+            <br/>
+            <br/>
             <div className="FlexContainer">
                 <div>
                     <form onSubmit={(e) => props.afterSubmission(e)}>
@@ -33,6 +35,8 @@ function LandingPage(props) {
                 </div>
                 <CsvUpload setPlotData={props.parseDataAndDisplay} />
             </div>
+            <p><a href="https://github.com/nicwineburger/crosswordstatswebsite#downloading-a-csv-of-your-data">CSV Download/Upload Instructions</a></p>
+            <br/>
             <p>
                 <a href="https://github.com/nicwineburger/crosswordstatswebsite">
                     <img src={githublogo} width={100} height={100}/>
